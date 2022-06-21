@@ -87,11 +87,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   slideTo(index: number) {
-    this.swiperRef?.swiperRef.slideTo(index - 1, 0);
+    this.swiperRef?.swiperRef.slideTo(index - 1, 500);
   }
 
   onDateSelected(event: any) {
-    console.log(event.value);
     this.timeListFiltered = this.timeList.filter((x:any) => x.dateId === event.value);
   }
 
@@ -111,7 +110,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     //https://us-central1-demko-barber.cloudfunctions.net/app/api/dates
-    //http://localhost:5000/demko-barber/us-central1/app
     this.http.post<any>('https://us-central1-demko-barber.cloudfunctions.net/app/api/dates', JSON.stringify(Record), {headers}).subscribe({
       next: (data:any) => {
         this.router.navigate(['/termin', data.appointmentId]);
