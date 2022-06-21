@@ -1,0 +1,169 @@
+<div class="navbar">
+    <div (click)="authService.SignOut()" class="nav-btn">
+        <img src="../../../assets/imgs/logout.png" alt="">
+    </div>
+    <div routerLink="/" class="nav-btn">
+        <img src="../../../assets/imgs/home.png" alt="">
+    </div>
+    <div routerLink="/historia" class="nav-btn">
+        <img src="../../../assets/imgs/history.png" alt="">
+    </div>
+</div>
+<div class="basic-main-container">
+    <section class="appoinments-section">
+        <ng-container *ngIf="appointmentListFiltered.length !== 0">
+            <div class="buttons-container-row">
+                <button (click)="deleteConfirmationModal(4, '')">clear</button>
+                <ng-container>
+                    <select (change)="onAppointmentDateChange($event)">
+                        <option *ngFor="let date of appointmentListDates" [value]="date">{{ date }}</option>
+                    </select>
+                </ng-container>
+            </div>
+            <div class="appointments-table">
+                <div *ngFor="let appointment of appointmentListFiltered" class="appointments-row">
+                    <p>{{ appointment.fullName }}</p>
+                    <p>{{ appointment.phoneNo }}</p>
+                    <p>{{ appointment.email }}</p>
+                    <p>{{ appointment.date }}</p>
+                    <p>{{ appointment.time }}</p>
+                    <p class="finish-btn" (click)="deleteConfirmationModal(3, appointment.appointmentId)">&#9986;</p>
+                </div>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="appointmentListFiltered.length === 0">
+            <h1 class="margin-top-0 margin-bottom-50">No booked appointments.</h1>
+        </ng-container>
+    </section>
+
+    <section class="management-section">
+
+        <div class="dates-main-container">
+            <div class="buttons-container-row">
+                <button (click)="openModal(1)">add</button>
+            </div>
+            <ng-container *ngIf="dateList?.length > 0">
+                <div class="scrollable-container">
+                    <div *ngFor="let date of dateList" class="dates-row">
+                        <p>{{ date.date }}</p>
+                        <button (click)="openModal(2, date)">edit</button>
+                        <button (click)="deleteConfirmationModal(1, date.id)">delete</button>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="dateList?.length == 0">
+                No dates available.
+            </ng-container>
+        </div>
+
+        <div class="hours-main-container">
+            <div class="buttons-container-row">
+                <button (click)="openModal(3)">add</button>
+                <!-- (change)="filterTimeByDate($event)" -->
+                <select [(ngModel)]="selectedDate" (ngModelChange)="filterTimeByDate($event)">
+                    <option *ngFor="let date of dateList" [ngValue]="date">{{ date.date }}</option>
+                </select>
+            </div>
+            <ng-container *ngIf="timeListFiltered?.length > 0">
+                <div class="scrollable-container">
+                    <div *ngFor="let time of timeListFiltered" class="hours-row">
+                        <p>{{ time.hour }}</p>
+                        <button (click)="openModal(4, time)">edit</button>
+                        <button (click)="deleteConfirmationModal(2, time.id)">delete</button>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="timeListFiltered?.length == 0">
+                No hours available.
+            </ng-container>
+        </div>
+    </section>
+</div>
+
+<div [ngClass]="{'fade-scale-in': modalOpen === 1, 'fade-scale-out': modalOpen === 2}" class="modal-main-container">
+    <div class="modal-forms-container">
+        <a *ngIf="modalCase > 0" (click)="closeModal()" class="close"></a>
+
+        <!-- ADD DATE FORM -->
+        <form *ngIf="modalCase === 1" [formGroup]="this.dateForm">
+            <label for="date">date:</label>
+            <input type="date" name="date" #date formControlName="date">
+            <div>
+                <button (click)="addDate()">save</button>
+            </div>
+        </form>
+
+        <!-- EDIT DATE FORM -->
+        <form *ngIf="modalCase === 2" [formGroup]="this.dateFormEdit">
+            <label for="date">date:</label>
+            <input type="date" name="date" #date formControlName="date">
+            <div>
+                <button (click)="submitEditedDate()">save</button>
+            </div>
+        </form>
+
+        <!-- ADD TIME FORM -->
+        <form *ngIf="modalCase === 3" [formGroup]="this.timeForm">
+            <label for="date">date:</label>
+            <select name="date" formControlName="date">
+                <option *ngFor="let date of dateList" [ngValue]="date.id">{{ date.date }}</option>
+            </select>
+            <label for="time">time:</label>
+            <input type="time" name="time" #time formControlName="time">
+            <div>
+                <button (click)="addTime()">save</button>
+            </div>
+        </form>
+
+        <!-- EDIT TIME FORM -->
+        <form *ngIf="modalCase === 4" [formGroup]="this.timeFormEdit">
+            <label for="date">date:</label>
+            <select name="date" formControlName="date">
+                <option *ngFor="let date of dateList" [value]="date.date">{{ date.date }}</option>
+            </select>
+            <label for="time">time:</label>
+            <input type="time" name="time" #time formControlName="time">
+            <div>
+                <button (click)="submitEditedTime()">save</button>
+            </div>
+        </form>
+
+        <div *ngIf="confirmationCase !== 0" class="confirmation-question-container">
+            <!-- DELETE DATE QUESTION -->
+            <ng-container *ngIf="confirmationCase === 1">
+                <p>Are you sure you want to delete this date?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+
+            <!-- DELETE TIME QUESTION -->
+            <ng-container *ngIf="confirmationCase === 2">
+                <p>Are you sure you want to delete this time?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+
+            <!-- FINISH APPOINTMENT QUESTION -->
+            <ng-container *ngIf="confirmationCase === 3">
+                <p>Are you sure you want to clear the given appointment?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+
+            <!-- FINISH ALL APPOINTMENT QUESTIONS -->
+            <ng-container *ngIf="confirmationCase === 4">
+                <p>Are you sure you want to clear all appointments for the given date?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>

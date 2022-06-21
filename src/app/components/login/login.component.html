@@ -1,0 +1,28 @@
+<div class="main-login-container">
+    <div class="login-buttons-container">
+        <!-- <div (click)="authService.GoogleAuth()"></div> -->
+        <div class="general-gradient-container">
+            <h1>Login</h1>
+            <label for="email">email:</label>
+            <input type="text" name="email" #email>
+            <label for="password">password:</label>
+            <input type="password" name="password" #password>
+            <button (click)="authService.SignIn(email.value, password.value)">login</button>
+        </div>
+        <!-- <div>
+            <label for="email">email:</label>
+            <input type="text" name="email" #email>
+
+            <label for="password">password:</label>
+            <input type="password" name="password" #password>
+
+            <label for="displayName">display name:</label>
+            <input type="text" name="displayName" #displayName>
+
+            <label for="phoneNumber">phone number:</label>
+            <input type="text" name="phoneNumber" #phoneNumber>
+
+            <button (click)="authService.SignUp(email, password.value, displayName.value, phoneNumber.value)">Register</button>
+        </div> -->
+    </div>
+</div>

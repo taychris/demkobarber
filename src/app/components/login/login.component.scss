@@ -1,0 +1,57 @@
+* {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-weight: 100;
+}
+
+.main-login-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  // .login-buttons-container {
+  //   display: flex;
+  //   div {
+  //     &:nth-child(1) {
+  //       width: 50px;
+  //       height: 50px;
+  //       background-image: url(https://www.freepnglogos.com/uploads/google-logo-png/google-logo-icon-png-transparent-background-osteopathy-16.png);
+  //       background-size: cover;
+  //     }
+  //   }
+  // }
+}
+
+label {
+  font-size: 22px;
+}
+
+input {
+  font-size: 20px;
+  margin-bottom: 20px;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid #1f1f1f;
+  background: none;
+  &:focus {
+    border: none;
+    border-bottom: 1px solid #1f1f1f;
+  }
+}
+
+button {
+  border: none;
+  font-size: 20px;
+  border-radius: 20px;
+  padding: 3px 20px;
+  font-weight: 100;
+  border: 1px solid #1f1f1f;
+  background: #1f1f1f;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+  &:hover {
+    background: #fff;
+    color: #1f1f1f;
+  }
+}

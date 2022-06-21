@@ -1,0 +1,84 @@
+* {
+  font-weight: 100;
+  color: #1f1f1f;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Bebas Neue", cursive;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 44px;
+}
+
+.navbar {
+  position: fixed;
+}
+
+.general-gradient-container {
+  p {
+    text-align: center;
+    &:first-of-type {
+      font-size: 20px;
+    }
+  }
+  div {
+    p {
+      font-size: 20px;
+      margin: 10px 0px;
+    }
+  }
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    a {
+      font-size: 16px !important;
+    }
+  }
+}
+
+.hover {
+  font-size: 25px !important;
+}
+
+// .hover {
+//   -webkit-animation: hover 3s linear 2s infinite;
+//   animation: hover 3s linear 2s infinite;
+// }
+
+// @-webkit-keyframes hover {
+//   0% {
+//     -webkit-transform: translateY(0);
+//   }
+//   25%,
+//   65% {
+//     -webkit-transform: translateY(-5px);
+//   }
+//   100% {
+//     -webkit-transform: translateY(0);
+//   }
+// }
+// @keyframes hover {
+//   0% {
+//     transform: translateY(0);
+//   }
+//   25%,
+//   65% {
+//     transform: translateY(-5px);
+//   }
+//   100% {
+//     transform: translateY(0);
+//   }
+// }
+
+@media only screen and (max-width: 450px) {
+  .general-gradient-container {
+    width: 75vw;
+  }
+}

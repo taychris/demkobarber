@@ -1,0 +1,25 @@
+<div class="navbar fade-in">
+    <div routerLink="/" class="nav-btn">
+        <img src="../../../assets/imgs/home.png" alt="">
+    </div>
+</div>
+<div class="basic-main-container">
+    <ng-container *ngIf="appointment">
+        <div class="general-gradient-container fade-in">
+            <h1>Váš termín</h1>
+            <div>
+                <p class="hover">{{ appointment.date }} {{ appointment.time }}</p>
+            </div>
+            <p [ngClass]="{'margin-bottom-0': questions === true}">ďakujem {{ appointment.fullName }}, že ste si vybrali mňa. teším sa na Vás. </p>
+            <p *ngIf="questions" class="faded-text">v prípade otázok, ma môžeťe kontaktovať buď</p>
+            <div class="buttons-container">
+                <a *ngIf="!questions" class="general-button" (click)="showQuestions()">otázky</a>
+                <a *ngIf="questions" href="mailto:benceldemko@gmail.com" title="Mailto" class="general-button margin-right-20">emailom</a>
+                <a *ngIf="questions" href="tel:+421915609672" title="Phone" class="general-button">volaním</a>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="!appointment">
+        <div class="lds-ripple"><div></div><div></div></div>
+    </ng-container>
+</div>
