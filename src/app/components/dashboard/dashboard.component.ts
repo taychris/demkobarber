@@ -4,7 +4,9 @@ import { FormGroup, Validators, FormBuilder } from "@angular/forms";
 import { AuthService } from 'src/app/shared/auth.service';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
-import { DateModel } from '../../shared/models/date';
+// import { DateModel } from '../../shared/models/date';
+// import * as moment from 'moment';
+import { HotToastService } from '@ngneat/hot-toast'
 
 @Component({
   selector: 'app-dashboard',
@@ -31,7 +33,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   timeForm: FormGroup;
   timeFormEdit: FormGroup;
 
-  dateList: any;
+  dateList: any = [];
   timeList: any;
   appointmentList: any;
   appointmentListDates: any;
@@ -45,7 +47,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private timeSubscription!: Subscription;
   private appointmentSubscription!: Subscription;
 
-  constructor(public authService: AuthService, private fb: FormBuilder, private firestore: AngularFirestore) {
+  constructor(public authService: AuthService, private fb: FormBuilder, private firestore: AngularFirestore, private toast: HotToastService) {
     this.dateForm = this.fb.group({
       date: ['', Validators.required],
     });
@@ -60,8 +62,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       date: ['', Validators.required],
       time: ['', Validators.required]
     });
-
-    this.dateList = [];
   }
 
 
@@ -103,7 +103,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.appointmentListDates = [...new Set(result)];
         
         //sort the extracted dates in an ascending manner
-        this.appointmentListDates.sort((a:any, b:any) => a.localeCompare(b));
+        this.appointmentListDates && this.appointmentListDates.sort((a:any, b:any) => { 
+          var aa = a.split('/').reverse().join(),
+              bb = b.split('/').reverse().join();
+          return aa < bb ? -1 : (aa > bb ? 1 : 0);
+        });
 
         if(this.selectedAppointmentDate === '' || this.selectedAppointmentDate === undefined) {
           this.selectedAppointmentDate = this.appointmentListDates[0];
@@ -277,9 +281,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.modalOpen = 2;
       this.modalCase = 0;
       this.dateForm.reset();
+      this.toast.success('Date added. Oye!', { position: 'bottom-center' });
     })
     .catch(e => {
       console.log(e);
+      this.toast.error('Ayay, something went wrong.', { position: 'bottom-center' });
       // this.msgService.changeMessage(e.message);
     });
   }
@@ -298,25 +304,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.modalOpen = 2;
       this.selectedItemId = '';
       this.dateFormEdit.reset();
+      this.toast.success('Date updated. Oye!', { position: 'bottom-center' });
     }).catch(e => {
       console.log(e);
+      this.toast.error('Ayay, something went wrong.', { position: 'bottom-center' });
     });
   }
 
 
   deleteDate(docId: string) {
+    const batch = this.firestore.firestore.batch()
     //delete the date itself
-    this.firestore.collection('dates').doc(docId).delete();
+    batch.delete(this.firestore.firestore.collection('dates').doc(docId));
     //if date gets deleted, delete every single time associated with the date
-    let hoursRef = this.firestore.collection('hours', ref => ref.where('dateId', '==', docId));
-    hoursRef.get().toPromise().then(function(querySnapshot:any) {
-      querySnapshot.forEach(function(doc:any) {
-        doc.ref.delete();
-      });
-    });
+    const hoursToDelete = this.timeList.filter((item: any) => item.dateId === docId);
 
-    //set the id back to the first item in the list => this is used for filtering and for setting the default value in the select element
-    this.selectedDateId = this.dateList[0].id;
+    hoursToDelete.forEach((item: any) => {
+      item.id && batch.delete(this.firestore.firestore.collection('hours').doc(item.id))
+    })
+
+    batch.commit().then(() => {
+      //set the id back to the first item in the list => this is used for filtering and for setting the default value in the select element
+      this.selectedDateId = this.dateList[0].id;
+      this.toast.success('Date deleted. Yay!', { position: 'bottom-center' });
+    }).catch((e:any) => {
+      console.log(e);
+      this.toast.error("Ohno, something went wrong.", { position: 'bottom-center' });
+    })
   }
 
   //**************************************************************
@@ -328,6 +342,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   addTime() {
     //create id to store it inside of the document as well
     const id = this.firestore.createId();
+    const batch = this.firestore.firestore.batch()
 
     let Record = {
       available: true,
@@ -341,26 +356,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.selectedDateId = this.timeForm.value.date;
 
     if(Record.hour !== null) {
-      this.firestore.doc(`hours/${id}`).set(Record)
-      .then(res => {
-        //reset only the time field
+      batch.set(this.firestore.firestore.doc(`hours/${id}`), Record)
+
+      let dateToUpdate = this.dateList.find((x:any) => x.id === this.selectedDateId);
+  
+      batch.update(this.firestore.firestore.doc(`dates/${this.selectedDateId}`), { 
+        available: true,
+        availableTimes: dateToUpdate!.availableTimes + 1
+      })
+  
+      batch.commit().then(() => {
         this.timeForm.controls['time'].reset();
+        this.toast.success('Added time. Yay!', { position: 'bottom-center' });
       })
       .catch(e => {
         console.log(e);
+        this.toast.error("Oh no bradar, something went wrong.", { position: 'bottom-center' });
       });
     }
-
-    let dateToUpdate = this.dateList.find((x:any) => x.id === this.selectedDateId);
-
-    this.firestore.collection('dates').doc(this.selectedDateId).update({
-      available: true,
-      availableTimes: dateToUpdate!.availableTimes + 1,
-    }).then(() => {
-      return true
-    }).catch(e => {
-      console.log(e);
-    });
   }
 
 
@@ -383,40 +396,42 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.modalCase = 0;
       this.selectedItemId = '';
       this.timeFormEdit.reset();
+      this.toast.success('Time updated. Yay!', { position: 'bottom-center' });
     }).catch(e => {
       console.log(e);
+      this.toast.error("Oh no manz, something went wrong.", { position: 'bottom-center' });
     });
   }
 
 
   deleteTime(docId: string) {
+    const batch = this.firestore.firestore.batch()
+
     if(!this.selectedDateId) {
       let timeToDelete = this.timeListFiltered.find((x:any) => x.id === docId);
       this.selectedDateId = timeToDelete.dateId;
     }
     let dateToUpdate = this.dateList.find((x:any) => x.id === this.selectedDateId);
 
-    this.firestore.collection('hours').doc(docId).delete();
+    batch.delete(this.firestore.firestore.doc(`hours/${docId}`));
 
     if(dateToUpdate!.availableTimes === 1) {
-      this.firestore.collection('dates').doc(this.selectedDateId).update({
+      batch.update(this.firestore.firestore.doc(`dates/${this.selectedDateId}`), {
         available: false,
-        availableTimes: 0,
-      }).then(() => {
-        return true
-      }).catch(e => {
-        console.log(e);
-      });
+        availableTimes: dateToUpdate!.availableTimes - 1,})
     } 
     if(dateToUpdate!.availableTimes > 1) {
-      this.firestore.collection('dates').doc(this.selectedDateId).update({
-        availableTimes: dateToUpdate!.availableTimes - 1,
-      }).then(() => {
-        return true
-      }).catch(e => {
-        console.log(e);
+      batch.update(this.firestore.firestore.doc(`dates/${this.selectedDateId}`), {
+        availableTimes: dateToUpdate!.availableTimes - 1
       });
     }
+
+    batch.commit().then(() => {
+      this.toast.success('Time deleted. Yay!', { position: 'bottom-center' });
+    }).catch(e => {
+      console.log(e);
+      this.toast.error("Oh no manz, something went wrong.", { position: 'bottom-center' });
+    });
     // this.filterTimesByDateId();
   }
 
@@ -431,26 +446,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
       orderState: 1
     })
     .then(() => {
-      console.log('Success.')
+      this.toast.success("Finished! I'm amazing.", { position: 'bottom-center' });
     })
     .catch((e:any) => {
       console.log(e);
+      this.toast.error("Oh no manz, something went wrong.", { position: 'bottom-center' });
     });
   }
 
   finishAllAppointments(appointmentDate:string) {
-    this.appointmentListFiltered.forEach((appointment:any) => {
-      //
-      this.firestore.collection('appointments', ref => ref.where('date', '==', appointmentDate)).doc(appointment.appointmentId).update({orderState: 1}).then(() =>{
+    const batch = this.firestore.firestore.batch();
 
-      }).catch((e:any) => {
-        console.log(e);
-      });
+    const appointmentsToMove = this.appointmentList.filter((item: any) => item.date === appointmentDate);
+
+    appointmentsToMove.forEach((item: any) => {
+      batch.update(this.firestore.firestore.doc(`appointments/${item.id}`), { orderState: 1 });
     });
 
     const appointmentDateItem = this.dateList.find((x:any) => x.date === appointmentDate);
-    
-    this.firestore.collection('dates').doc(appointmentDateItem.id).delete();
+
+    batch.delete(this.firestore.firestore.doc(`dates/${appointmentDateItem.id}`));
+
+    batch.commit().then(() => {
+      this.toast.success("Finished! I'm amazing.", { position: 'bottom-center' });
+    })
+    .catch((e:any) => {
+      console.log(e);
+      this.toast.error("Oh no manz, something went wrong.", { position: 'bottom-center' });
+    });
   }
   
   ngOnDestroy() {

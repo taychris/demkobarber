@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 // import Swiper core and required modules
 import SwiperCore, { Mousewheel, Pagination } from "swiper/core";
 import { Subscription } from 'rxjs';
+import * as moment from 'moment';
 
 // install Swiper modules
 SwiperCore.use([Mousewheel, Pagination]);
@@ -95,12 +96,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   createAppointment() {
+    let createdAt = new Date()
     let Record = {
       dateId: this.appointmentForm.get('date')?.value,
       timeId: this.appointmentForm.get('time')?.value,
       fullName: this.appointmentForm.value.fullName,
       phoneNo: this.appointmentForm.value.phoneNo,
       email: this.appointmentForm.value.email,
+      createdAt: moment(createdAt).format('yyyy-MM-DD HH:mm:ss')
     }
 
     const headers = {

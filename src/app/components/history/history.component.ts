@@ -2,6 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from 'src/app/shared/auth.service';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
+import * as moment from 'moment';
+import { HotToastService } from '@ngneat/hot-toast'
+// import 'rxjs/add/operator/do';
+// import 'rxjs/add/operator/scan';
+// import 'rxjs/add/operator/take';
 
 @Component({
   selector: 'app-history',
@@ -10,7 +15,9 @@ import { Subscription } from 'rxjs';
 })
 export class HistoryComponent implements OnInit, OnDestroy {
   private appointmentSubscription!: Subscription;
-  appointmentList: any;
+  appointmentList: any = [];
+  // tempArray: any = [];
+  // tempInt: number = 5;
   appointmentListDates: any;
   appointmentListFiltered: any = [];
 
@@ -20,28 +27,59 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   selectedAppointmentDate: string = '';
 
-  constructor(public authService: AuthService, private firestore: AngularFirestore) {
-    this.appointmentList = [];
+  lastVisible: any;
+
+  constructor(public authService: AuthService, private firestore: AngularFirestore, private toast: HotToastService) {
   }
 
   ngOnInit(): void {
-    this.appointmentSubscription = this.firestore.collection('appointments', ref => ref.where('orderState', '==', 1).orderBy('date', 'desc')).valueChanges({idField: 'id'}).subscribe(ss => {
-      this.appointmentList = ss;
+    this.getHistory();
+  }
 
-      // if(this.appointmentList) {
-      //   //extract the dates from the appointment list > used for select dropdown values | FILTERING
-      //   let result = this.appointmentList.map((item:any) => item.date);
-      //   this.appointmentListDates = [...new Set(result)];
+  scrollHandler(e: any) {
+    if(e === 'bottom') {
+      this.moreHistory();
+    }
+  }
 
-      //   if(this.selectedAppointmentDate === '' || this.selectedAppointmentDate === undefined) {
-      //     this.selectedAppointmentDate = this.appointmentListDates[0];
-      //   }
+  // historyToBeUpdated(date: string) {
+  //   let createdAt = new Date()
 
-      //   if(this.selectedAppointmentDate) {
-      //     this.appointmentListFiltered = this.appointmentList.filter((item:any) => item.date === this.selectedAppointmentDate);
-      //   }
-      // }
-    });
+  //   return this.firestore.firestore.collection('appointments').where('date', '==', date).get().then((docSnapshots: any) => {
+  //     this.lastVisible = docSnapshots.docs[docSnapshots.docs.length-1];
+  //     docSnapshots.forEach((doc: any) => {
+  //       this.firestore.collection('appointments').doc(doc.id).update({createdAt: moment(createdAt).format('yyyy-MM-DD HH:mm:ss')}).then(() => {
+  //         console.log('updated')
+  //       })
+  //     })
+  //   });
+  // }
+
+  getHistory() {
+    this.firestore.firestore.collection('appointments').where('orderState', '==', 1).orderBy('createdAt', 'desc').limit(25).get().then((docSnapshots: any) => {
+      this.lastVisible = docSnapshots.docs[docSnapshots.docs.length-1];
+      docSnapshots.forEach((doc: any) => {
+        var data = doc.data();
+        data.id = doc.id;
+        this.appointmentList.push(data);
+      })
+    })
+    .catch((e) => {
+      console.log(e)
+    })
+  }
+
+  moreHistory() {
+    this.lastVisible && 
+    this.firestore.firestore.collection('appointments').where('orderState', '==', 1).orderBy('createdAt', 'desc').limit(25).startAfter(this.lastVisible).get().then((docSnapshots: any) => {
+      this.lastVisible = docSnapshots.docs[docSnapshots.docs.length-1];
+      docSnapshots.forEach((doc: any) => {
+        this.appointmentList.push(doc.data());
+      })
+    })
+    .catch((e) => {
+      console.log(e)
+    })
   }
 
   //confirmation case 0 = no verification question is displayed
@@ -80,13 +118,21 @@ export class HistoryComponent implements OnInit, OnDestroy {
   }
 
   deleteAppointment(appointmentId: string) {
-    this.firestore.collection('appointments').doc(appointmentId).delete();
+    this.firestore.collection('appointments').doc(appointmentId).update({orderState: 2}).then(() => {
+      this.appointmentList = this.appointmentList.filter((item: any) => { return item.id !== appointmentId });
+      console.log(appointmentId);
+      this.toast.success('Deleted history item.', { position: 'bottom-center' });
+    });
   }
 
   deleteAllAppointments() {
     this.appointmentList.forEach((appointment:any) => {
-      this.firestore.collection('appointments').doc(appointment.appointmentId).delete();
+      this.firestore.collection('appointments').doc(appointment.appointmentId).update({orderState: 2}).then(() => {
+        this.appointmentList = this.appointmentList.filter((item: any) => { return item.id !== appointment.appointmentId })
+      });
     });
+    
+    this.toast.success('Deleted history.', { position: 'bottom-center' });
   }
 
   ngOnDestroy() {

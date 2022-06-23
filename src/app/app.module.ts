@@ -25,6 +25,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PagenotfoundComponent } from './components/pagenotfound/pagenotfound.component';
 import { AppointmentComponent } from './components/appointment/appointment.component';
 import { HistoryComponent } from './components/history/history.component';
+import { ScrollableDirective } from './scrollable.directive';
+import { HotToastModule } from '@ngneat/hot-toast';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,8 @@ import { HistoryComponent } from './components/history/history.component';
     DashboardComponent,
     PagenotfoundComponent,
     AppointmentComponent,
-    HistoryComponent
+    HistoryComponent,
+    ScrollableDirective,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),
@@ -51,6 +54,7 @@ import { HistoryComponent } from './components/history/history.component';
     AngularFirestoreModule.enablePersistence(),
     AngularFireAuthModule,
     AngularFireDatabaseModule,
+    HotToastModule.forRoot(),
   ],
   providers: [AuthService],
   bootstrap: [AppComponent]
