@@ -27,6 +27,10 @@ import { AppointmentComponent } from './components/appointment/appointment.compo
 import { HistoryComponent } from './components/history/history.component';
 import { ScrollableDirective } from './scrollable.directive';
 import { HotToastModule } from '@ngneat/hot-toast';
+import { AppointmentsComponent } from './components/dashboard/appointments/appointments.component';
+import { TimeManagerComponent } from './components/dashboard/time-manager/time-manager.component';
+import { DateManagerComponent } from './components/dashboard/date-manager/date-manager.component';
+import { NavAdminComponent } from './components/nav-admin/nav-admin.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +42,10 @@ import { HotToastModule } from '@ngneat/hot-toast';
     AppointmentComponent,
     HistoryComponent,
     ScrollableDirective,
+    AppointmentsComponent,
+    TimeManagerComponent,
+    DateManagerComponent,
+    NavAdminComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),

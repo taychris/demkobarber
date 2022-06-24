@@ -1,0 +1,15 @@
+
+<div class="navbar">
+    <div (click)="authService.SignOut()" class="nav-btn">
+        <img src="../../../assets/imgs/logout.png" alt="">
+    </div>
+    <div routerLink="/" class="nav-btn">
+        <img src="../../../assets/imgs/home.png" alt="">
+    </div>
+    <div *ngIf="href === '/historia'" routerLink="/dashboard" class="nav-btn">
+        <img src="../../../assets/imgs/dashboard1.png" alt="">
+    </div>
+    <div *ngIf="href === '/dashboard'" routerLink="/historia" class="nav-btn">
+        <img src="../../../assets/imgs/history.png" alt="">
+    </div>
+</div>

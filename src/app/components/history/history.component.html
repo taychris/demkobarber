@@ -1,53 +1,40 @@
-<div>
-    <div class="navbar">
-        <div (click)="authService.SignOut()" class="nav-btn">
-            <img src="../../../assets/imgs/logout.png" alt="">
+<nav-admin></nav-admin>
+<div class="basic-main-container">
+    <section *ngIf="appointmentList.length > 0">
+        <div class="buttons-container-row">
+            <button (click)="deleteConfirmationModal(2, '')">clear</button>
         </div>
-        <div routerLink="/" class="nav-btn">
-            <img src="../../../assets/imgs/home.png" alt="">
-        </div>
-        <div routerLink="/dashboard" class="nav-btn">
-            <img src="../../../assets/imgs/dashboard1.png" alt="">
-        </div>
-    </div>
-    <div class="basic-main-container">
-        <section *ngIf="appointmentList.length > 0">
-            <div class="buttons-container-row">
-                <button (click)="deleteConfirmationModal(2, '')">clear</button>
-            </div>
-            <div scrollable (scrollPosition)="scrollHandler($event)" class="appointments-table">
-                <div *ngFor="let appointment of appointmentList" class="appointments-row">
-                    <p>{{ appointment.fullName }}</p>
-                    <p>{{ appointment.phoneNo }}</p>
-                    <p>{{ appointment.email }}</p>
-                    <p>{{ appointment.date }}</p>
-                    <p>{{ appointment.time }}</p>
-                    <p class="finish-btn" (click)="deleteConfirmationModal(1, appointment.appointmentId)">&#10005;</p>
-                </div>
-            </div>
-        </section>
-        <h1 *ngIf="appointmentList.length === 0">History is empty.</h1>
-    </div>
-    
-    <div [ngClass]="{'fade-scale-in': modalOpen === 1, 'fade-scale-out': modalOpen === 2}" class="modal-main-container">
-        <div class="modal-forms-container">
-            <div *ngIf="confirmationCase !== 0" class="confirmation-question-container">
-                <ng-container *ngIf="confirmationCase === 1">
-                    <p>Are you sure you want to delete this appointment from history?</p>
-                    <div class="confirmation-buttons-container">
-                        <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
-                        <button class="cancel-btn" (click)="confirmFalse()">no</button>
-                    </div>
-                </ng-container>
-                <ng-container *ngIf="confirmationCase === 2">
-                    <p>Are you sure you want to delete all appointments from history?</p>
-                    <div class="confirmation-buttons-container">
-                        <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
-                        <button class="cancel-btn" (click)="confirmFalse()">no</button>
-                    </div>
-                </ng-container>
+        <div scrollable (scrollPosition)="scrollHandler($event)" class="appointments-table">
+            <div *ngFor="let appointment of appointmentList" class="appointments-row">
+                <p>{{ appointment.fullName }}</p>
+                <p>{{ appointment.phoneNo }}</p>
+                <p>{{ appointment.email }}</p>
+                <p>{{ appointment.date }}</p>
+                <p>{{ appointment.time }}</p>
+                <p class="finish-btn" (click)="deleteConfirmationModal(1, appointment.appointmentId)">&#10005;</p>
             </div>
         </div>
-    </div>
+    </section>
+    <h1 *ngIf="appointmentList.length === 0">History is empty.</h1>
+</div>
 
+<div [ngClass]="{'fade-scale-in': modalOpen === 1, 'fade-scale-out': modalOpen === 2}" class="modal-main-container">
+    <div class="modal-forms-container">
+        <div *ngIf="confirmationCase !== 0" class="confirmation-question-container">
+            <ng-container *ngIf="confirmationCase === 1">
+                <p>Are you sure you want to delete this appointment from history?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="confirmationCase === 2">
+                <p>Are you sure you want to delete all appointments from history?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+        </div>
+    </div>
 </div>

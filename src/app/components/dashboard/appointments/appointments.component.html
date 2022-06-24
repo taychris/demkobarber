@@ -1,0 +1,50 @@
+<section class="appoinments-section">
+    <ng-container *ngIf="appointmentListFiltered.length !== 0">
+        <div class="buttons-container-row">
+            <button (click)="deleteConfirmationModal(4, '')">clear</button>
+            <ng-container>
+                <select (change)="onAppointmentDateChange($event)">
+                    <option *ngFor="let date of appointmentListDates" [value]="date">{{ date }}</option>
+                </select>
+            </ng-container>
+        </div>
+        <div class="appointments-table">
+            <div *ngFor="let appointment of appointmentListFiltered" class="appointments-row">
+                <p>{{ appointment.fullName }}</p>
+                <p>{{ appointment.phoneNo }}</p>
+                <p>{{ appointment.email }}</p>
+                <p>{{ appointment.date }}</p>
+                <p>{{ appointment.time }}</p>
+                <p class="finish-btn" (click)="deleteConfirmationModal(3, appointment.appointmentId)">&#9986;</p>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="appointmentListFiltered.length === 0">
+        <h1 class="margin-top-0 margin-bottom-50">No booked appointments.</h1>
+    </ng-container>
+</section>
+
+<div [ngClass]="{'fade-scale-in': modalOpen === 1, 'fade-scale-out': modalOpen === 2}" class="modal-main-container">
+    <div class="modal-forms-container">
+        <div *ngIf="confirmationCase !== 0" class="confirmation-question-container">
+
+            <!-- FINISH APPOINTMENT QUESTION -->
+            <ng-container *ngIf="confirmationCase === 3">
+                <p>Are you sure you want to clear the given appointment?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+
+            <!-- FINISH ALL APPOINTMENT QUESTIONS -->
+            <ng-container *ngIf="confirmationCase === 4">
+                <p>Are you sure you want to clear all appointments for the given date?</p>
+                <div class="confirmation-buttons-container">
+                    <button class="confirm-btn" (click)="confirmTrue($event)">yes</button>
+                    <button class="cancel-btn" (click)="confirmFalse()">no</button>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>

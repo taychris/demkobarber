@@ -1,84 +1,78 @@
-* {
-  font-weight: 100;
-  color: #1f1f1f;
-}
-
-h1,
-h2,
-h3,
-h4 {
-  font-family: "Bebas Neue", cursive;
-  text-transform: uppercase;
-  text-align: center;
-  margin-top: 0;
-}
-
-h1 {
-  font-size: 44px;
-}
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;800;900&family=Roboto:wght@100;300&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
 
 .navbar {
   position: fixed;
-}
-
-.general-gradient-container {
-  p {
-    text-align: center;
-    &:first-of-type {
-      font-size: 20px;
+  background-color: #000;
+  .home-btn {
+    width: 25px;
+    height: 25px;
+    background: transparent;
+    padding: 13px;
+    margin: 0px 7px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.7s ease-in-out;
+    &:hover {
+      opacity: 0.8;
+    }
+    img {
+      height: inherit;
     }
   }
-  div {
+}
+
+.basic-main-container {
+  background-color: #000;
+  height: 100vh;
+  overflow: hidden;
+  .content-container {
+    width: 465px;
+    h1{
+      font-family: "Bebas Neue", cursive;
+      text-transform: uppercase;
+      font-size: 115px;
+      color: #f1c800;
+      margin: 0;
+      line-height: 1;
+      letter-spacing: 5px;
+      text-align: center;
+    }
     p {
-      font-size: 20px;
-      margin: 10px 0px;
+      font-family: "Roboto", sans-serif;
+      font-weight: 100;
+      text-align: center;
+      color: #bababa;
+      margin: 0;
+      text-align: center;
+      &:first-of-type {
+        font-size: 58px;
+        margin-bottom: 15px;
+      }
+      &:last-of-type {
+        font-size: 20px;
+      }
     }
-  }
-  .buttons-container {
-    display: flex;
-    justify-content: center;
-    a {
-      font-size: 16px !important;
-    }
+
   }
 }
 
-.hover {
-  font-size: 25px !important;
-}
-
-// .hover {
-//   -webkit-animation: hover 3s linear 2s infinite;
-//   animation: hover 3s linear 2s infinite;
-// }
-
-// @-webkit-keyframes hover {
-//   0% {
-//     -webkit-transform: translateY(0);
-//   }
-//   25%,
-//   65% {
-//     -webkit-transform: translateY(-5px);
-//   }
-//   100% {
-//     -webkit-transform: translateY(0);
-//   }
-// }
-// @keyframes hover {
-//   0% {
-//     transform: translateY(0);
-//   }
-//   25%,
-//   65% {
-//     transform: translateY(-5px);
-//   }
-//   100% {
-//     transform: translateY(0);
-//   }
-// }
-
-@media only screen and (max-width: 450px) {
-  .general-gradient-container {
-    width: 75vw;
+@media only screen and (max-width: 768px) {
+  .basic-main-container {
+    .content-container {
+      width: 300px;
+      h1 {
+        font-size: 60px;
+        margin-bottom: 15px;
+      }
+      p {
+        &:first-of-type {
+          font-size: 32px;
+        }
+        &:last-of-type {
+          font-size: 20px;
+        }
+      }
+    }
   }
 }

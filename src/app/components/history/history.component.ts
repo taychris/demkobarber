@@ -42,17 +42,14 @@ export class HistoryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // historyToBeUpdated(date: string) {
+  // setCreatedAt() {
   //   let createdAt = new Date()
 
-  //   return this.firestore.firestore.collection('appointments').where('date', '==', date).get().then((docSnapshots: any) => {
-  //     this.lastVisible = docSnapshots.docs[docSnapshots.docs.length-1];
-  //     docSnapshots.forEach((doc: any) => {
-  //       this.firestore.collection('appointments').doc(doc.id).update({createdAt: moment(createdAt).format('yyyy-MM-DD HH:mm:ss')}).then(() => {
-  //         console.log('updated')
-  //       })
-  //     })
-  //   });
+  //   this.tempArray.forEach((item: any) => {
+  //     console.log(item.id);
+  //     console.log(moment(createdAt).format('yyyy-MM-DD HH:mm:ss'));
+  //     this.firestore.firestore.collection('appointments').doc(item.id).update({ createdAt: moment(createdAt).format('yyyy-MM-DD HH:mm:ss')})
+  //   })
   // }
 
   getHistory() {
@@ -74,7 +71,9 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.firestore.firestore.collection('appointments').where('orderState', '==', 1).orderBy('createdAt', 'desc').limit(25).startAfter(this.lastVisible).get().then((docSnapshots: any) => {
       this.lastVisible = docSnapshots.docs[docSnapshots.docs.length-1];
       docSnapshots.forEach((doc: any) => {
-        this.appointmentList.push(doc.data());
+        var data = doc.data();
+        data.id = doc.id;
+        this.appointmentList.push(data);
       })
     })
     .catch((e) => {
