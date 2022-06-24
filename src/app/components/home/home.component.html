@@ -127,7 +127,7 @@
                                         [ngClass]="{'waiting': formState === 0, 'filled' : formState >= 2 }">
                                         <mat-form-field>
                                             <label>čas:</label>
-                                            <mat-select name="time" #time formControlName="time">
+                                            <mat-select name="time" #time formControlName="time" (selectionChange)="onTimeSelected()">
                                                 <ng-container *ngFor="let time of timeListFiltered">
                                                     <mat-option *ngIf="time.available" [value]="time.id">
                                                         {{time.hour}}
@@ -139,20 +139,24 @@
                                     <div class="form-section-container"
                                         [ngClass]="{'waiting': formState < 2, 'filled' : formState >= 3 }">
                                         <label>meno:</label>
-                                        <input type="text" name="fullName" #fullname formControlName="fullName">
+                                        <input type="text" name="fullName" id="fullName" formControlName="fullName" required>
                                     </div>
                                     <div class="form-section-container"
                                         [ngClass]="{'waiting': formState < 3, 'filled' : formState >= 4 }">
                                         <label>tel. číslo:</label>
-                                        <input type="text" name="phoneNo" #phoneNo formControlName="phoneNo">
+                                        <input type="text" name="phoneNo" id="phoneNo" formControlName="phoneNo" required>
                                     </div>
                                     <div class="form-section-container"
                                         [ngClass]="{'waiting': formState < 4, 'filled' : formState >= 5 }">
                                         <label>email:</label>
-                                        <input type="email" name="email" #email formControlName="email">
+                                        <input type="email" name="email" id="email" formControlName="email" required>
                                     </div>
                                     <div class="booking-btns-container">
-                                        <button *ngIf="formState !== 4" class="btn absolute margin-right-20"
+                                        <button *ngIf="formState !== 4" [disabled]="formState === 0 && selectedDate === false || 
+                                        formState === 1 && selectedTime === false || 
+                                        appointmentForm.controls['fullName'].invalid && formState === 2 || 
+                                        appointmentForm.controls['phoneNo'].invalid  && formState === 3 || 
+                                        appointmentForm.controls['email'].invalid && formState === 4 " class="btn absolute margin-right-20"
                                             (click)="next()">ďalej</button>
                                         <button *ngIf="formState === 4 && loading === false"
                                             class="btn absolute absolute-finished margin-right-20"

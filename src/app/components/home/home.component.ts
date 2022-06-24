@@ -24,6 +24,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   formState: number = 0;
   loading: boolean = false;
   selectedDateId!: string;
+  selectedDate: boolean = false;
+  selectedTime: boolean = false;
   appointmentForm: FormGroup;
 
   dateList: any;
@@ -54,7 +56,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         return aa < bb ? -1 : (aa > bb ? 1 : 0);
       });
 
-
+      this.dateList && this.patchValuesToForm();
     });
 
     this.timeSubscription = this.firestore.collection('hours', ref => ref.where('available', '==', true).orderBy('hour', 'asc')).valueChanges({idField: 'id'}).subscribe(ss => {
@@ -77,14 +79,38 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       }
     });
+
   }
   
   next() {
-    this.formState = this.formState + 1;
+    this.formState++;
   }
   
   back() {
-    this.formState = this.formState - 1;
+    this.formState--;
+  }
+
+  patchValuesToForm() {
+    var data: any = localStorage.getItem('formPrefill')
+    data = JSON.parse(data);
+
+    if(data) {
+      this.appointmentForm.patchValue({
+        fullName: data.fullName,
+        phoneNo: data.phoneNo,
+        email: data.email,
+      })
+    }
+  }
+
+  setFormPrefill() {
+    const data = {
+      fullName: this.appointmentForm.value.fullName,
+      phoneNo: this.appointmentForm.value.phoneNo,
+      email: this.appointmentForm.value.email,
+    }
+
+    localStorage.setItem('formPrefill', JSON.stringify(data));
   }
 
   slideTo(index: number) {
@@ -93,6 +119,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onDateSelected(event: any) {
     this.timeListFiltered = this.timeList.filter((x:any) => x.dateId === event.value);
+
+    this.selectedDate = true;
+  }
+
+  onTimeSelected() {
+    this.selectedTime = true;
   }
 
   createAppointment() {
@@ -111,6 +143,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
+    this.setFormPrefill();
 
     //https://us-central1-demko-barber.cloudfunctions.net/app/api/dates
     this.http.post<any>('https://us-central1-demko-barber.cloudfunctions.net/app/api/dates', JSON.stringify(Record), {headers}).subscribe({
