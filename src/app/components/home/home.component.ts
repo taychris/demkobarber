@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import SwiperCore, { Mousewheel, Pagination } from "swiper/core";
 import { Subscription } from 'rxjs';
 import * as moment from 'moment';
+import { HotToastService } from '@ngneat/hot-toast';
 
 // install Swiper modules
 SwiperCore.use([Mousewheel, Pagination]);
@@ -24,8 +25,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   formState: number = 0;
   loading: boolean = false;
   selectedDateId!: string;
-  selectedDate: boolean = false;
-  selectedTime: boolean = false;
+  selectedDate: any;
+  selectedTime: any;
+  isDateSelected: boolean = false;
+  isTimeSelected: boolean = false;
+  isSameDay: boolean = false;
   appointmentForm: FormGroup;
 
   dateList: any;
@@ -36,7 +40,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private dateSubscription!: Subscription;
   private timeSubscription!: Subscription;
 
-  constructor(private firestore: AngularFirestore, private fb: FormBuilder, private http: HttpClient, private router: Router) { 
+  constructor(private firestore: AngularFirestore, private fb: FormBuilder, private http: HttpClient, private router: Router, private toast: HotToastService) { 
     this.appointmentForm = this.fb.group({
       date: ['', Validators.required],
       time: ['', Validators.required],
@@ -62,6 +66,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.timeSubscription = this.firestore.collection('hours', ref => ref.where('available', '==', true).orderBy('hour', 'asc')).valueChanges({idField: 'id'}).subscribe(ss => {
       this.timeList = ss;
       if(this.dateList) {
+        // this.checkExpiredHours(this.dateList, this.timeList);
         if(this.selectedDateId) {
           //if a specific date was chosen, only show the hours corresponding to the date selected & is not empty
           if(this.timeList.length > 0) {
@@ -76,10 +81,39 @@ export class HomeComponent implements OnInit, OnDestroy {
         //sort list by ascending hours & if not empty
         if(this.timeListFiltered) {
           this.timeListFiltered = this.timeListFiltered.sort((a:any, b:any) => a.hour.localeCompare(b.hour));
+          
+          // this.checkExpiredHours(this.dateList, this.timeListFiltered);
         }
       }
     });
 
+  }
+
+  checkExpiredHours(dateList: any, timeList: any) {
+    let date = new Date();
+    let dateNow = moment(date).format('DD/MM/YYYY');
+    let timeNow = moment(date).format('h:mm');
+    const batch = this.firestore.firestore.batch();
+
+    dateList.forEach((dateItem: any) => {
+      if(dateItem.date === dateNow) {
+        timeList.forEach((timeItem: any) => {
+          if(timeItem.dateId === dateItem.id && timeNow > timeItem.hour) {
+            batch.delete(this.firestore.firestore.doc(`hour/${timeItem.id}`))
+            if(dateItem.availableTimes === 1) {
+              batch.update(this.firestore.firestore.doc(`date/${dateItem.id}`), { availableTimes: 0, available: false })
+            }
+            if(dateItem.availableTimes > 1) {
+              batch.update(this.firestore.firestore.doc(`date/${dateItem.id}`), { availableTimes: dateItem.availableTimes-- })
+            }
+          }
+        })
+      }
+    })
+
+    batch.commit().catch((e: any) => {
+      console.log(e);
+    })
   }
   
   next() {
@@ -118,13 +152,48 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onDateSelected(event: any) {
-    this.timeListFiltered = this.timeList.filter((x:any) => x.dateId === event.value);
+    const dateId = event.value;
+    let dateNow = new Date().toDateString();
+    dateNow = moment(dateNow).format('YYYY-MM-DD');
 
-    this.selectedDate = true;
+    this.selectedDate = this.dateList.find((item: any) => item.id === dateId);
+    let dateToCompare = this.selectedDate.date;
+    dateToCompare = moment(dateToCompare, 'DD/MM/YYYY').format('YYYY-MM-DD');
+
+    if(moment(dateNow).isAfter(dateToCompare)) {
+      this.toast.error('Nie je možné si rezervovať vybraný dátum.', { position: 'bottom-center' });
+      this.isDateSelected = false;
+    } else {
+      this.isDateSelected = true;
+    }
+
+    if(dateNow === dateToCompare) {
+      this.isSameDay = true;
+    } else {
+      this.isSameDay = false;
+    }
+
+    this.timeListFiltered = this.timeList.filter((x:any) => x.dateId === dateId);
   }
 
-  onTimeSelected() {
-    this.selectedTime = true;
+  onTimeSelected(event: any) {
+    const timeId = event.value;
+    let dateNow = new Date();
+    let timeNow = moment(dateNow).format('h:mm');
+
+    this.selectedTime = this.timeList.find((item: any) => item.id === timeId);
+    let timeToCompare = moment(this.selectedTime.hour, 'h:mm').format('h:mm');
+
+    if(this.isSameDay === true) {
+      if(timeNow > timeToCompare) {
+        this.toast.error('Nie je možné si rezervovať vybraný čas.', { position: 'bottom-center' });
+        this.isTimeSelected = false;
+      } else {
+        this.isTimeSelected = true;
+      }
+    } else {
+      this.isTimeSelected = true;
+    }
   }
 
   createAppointment() {
@@ -145,10 +214,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.setFormPrefill();
 
-    //https://us-central1-demko-barber.cloudfunctions.net/app/api/dates
-    this.http.post<any>('https://us-central1-demko-barber.cloudfunctions.net/app/api/dates', JSON.stringify(Record), {headers}).subscribe({
+    // this.router.navigate(['termin'], {queryParams: {fullName: Record.fullName, date: this.selectedDate.date, time: this.selectedTime.hour}});
+
+    // https://us-central1-demko-barber.cloudfunctions.net/app/api/dates
+    // https://us-central1-demko-barber.cloudfunctions.net/app
+    this.http.post<any>('https://europe-west1-demko-barber.cloudfunctions.net/createAppointment', JSON.stringify(Record), {headers}).subscribe({
       next: (data:any) => {
-        this.router.navigate(['/termin', data.appointmentId]);
+        this.router.navigate(['termin'], { queryParams: {fullName: data.fullName, date: data.date, time: data.time } });
       },
       error: (error:any) => {
         // this.msgService.changeMessage(error.message);

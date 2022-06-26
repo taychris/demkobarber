@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/firestore';
+// import { AngularFirestore } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -14,16 +14,20 @@ export class AppointmentComponent implements OnInit, OnDestroy {
   appointment: any;
   questions: boolean = false;
 
-  constructor(private firestore: AngularFirestore, private activatedRoute: ActivatedRoute,) {
-    this.appointmentId = this.activatedRoute.snapshot.paramMap.get('id');
+  constructor(private activatedRoute: ActivatedRoute) {
+    // this.appointmentId = this.activatedRoute.snapshot.paramMap.get('id');
+
+    this.activatedRoute.queryParams.subscribe((params: any) => {
+      this.appointment = params;  
+    });
    }
 
   ngOnInit(): void {
-    if(this.appointmentId !== undefined) {
-      this.appointmentSubscription = this.firestore.collection('appointments').doc(this.appointmentId).valueChanges().subscribe(data => {
-        this.appointment = data;
-      });
-    }
+    // if(this.appointmentId !== undefined) {
+    //   this.appointmentSubscription = this.firestore.collection('appointments').doc(this.appointmentId).valueChanges().subscribe(data => {
+    //     this.appointment = data;
+    //   });
+    // }
   }
 
   showQuestions() {

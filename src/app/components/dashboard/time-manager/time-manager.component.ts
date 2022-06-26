@@ -41,7 +41,6 @@ export class TimeManagerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-
     this.timeSubscription = this.firestore.collection('hours', ref => ref.where('available', '==', true).orderBy('hour', 'asc')).valueChanges({idField: 'id'}).subscribe(ss => {
       this.timeList = ss;
       if(this.dateList.length !== 0) {
